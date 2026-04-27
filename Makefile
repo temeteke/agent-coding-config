@@ -87,7 +87,7 @@ define uninstall_skills_for_agent
 		npx skills remove "$$skill" \
 			--agent "$(1)" \
 			$(SKILL_SCOPE) \
-			$(SKILL_REMOVE_FLAGS) || true; \
+			$(SKILL_REMOVE_FLAGS) < /dev/null || true; \
 	done < "$(SKILL_MANIFEST)"
 endef
 
