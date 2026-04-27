@@ -57,12 +57,16 @@ define install_skills_for_agent
 			exit 1; \
 		fi; \
 		source="$$1"; \
-		skill="$$2"; \
+		shift; \
+		skill_args=""; \
+		for s in "$$@"; do \
+			skill_args="$$skill_args --skill $$s"; \
+		done; \
 		command -v npx >/dev/null 2>&1 || { echo "error: npx not found" >&2; exit 1; }; \
-			echo "install skill: $$source / $$skill -> $(1)"; \
-		npx skills add "$$source" \
-			--skill "$$skill" \
-			--agent "$(1)" \
+		echo "install skill: $$source ($$*) -> $(1)"; \
+		eval npx skills add \"$$source\" \
+			$$skill_args \
+			--agent \"$(1)\" \
 			$(SKILL_SCOPE) \
 			$(SKILL_INSTALL_FLAGS) < /dev/null; \
 	done < "$(SKILL_MANIFEST)"
@@ -81,10 +85,10 @@ define uninstall_skills_for_agent
 			echo "error: invalid line in $(SKILL_MANIFEST): $$line" >&2; \
 			exit 1; \
 		fi; \
-		skill="$$2"; \
+		shift; \
 		command -v npx >/dev/null 2>&1 || { echo "error: npx not found" >&2; exit 1; }; \
-		echo "remove skill: $$skill -> $(1)"; \
-		npx skills remove "$$skill" \
+		echo "remove skill: $$* -> $(1)"; \
+		npx skills remove "$$@" \
 			--agent "$(1)" \
 			$(SKILL_SCOPE) \
 			$(SKILL_REMOVE_FLAGS) < /dev/null || true; \

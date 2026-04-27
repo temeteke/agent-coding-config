@@ -1,7 +1,4 @@
-# source skill-name
+# source skill1 skill2 skill3...
 vercel-labs/skills find-skills
 https://gitlab.com/gitlab-org/ai/skills.git glab
-temeteke/agent-coding-config taskchute-update
-temeteke/agent-coding-config taskchute-rollover
-temeteke/agent-coding-config taskchute-deduplicate
-temeteke/agent-coding-config taskchute-balance
+temeteke/agent-coding-config taskchute-update taskchute-rollover taskchute-deduplicate taskchute-balance
