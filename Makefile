@@ -10,18 +10,75 @@ SKILL_MANIFEST ?= skill-manifest.txt
 SKILL_SCOPE ?= --global
 SKILL_INSTALL_FLAGS ?= --copy -y
 SKILL_REMOVE_FLAGS ?= -y
+SKILL_AGENTS ?= codex claude-code opencode cline roo
+SKILL_AGENT_ARGS := $(foreach agent,$(SKILL_AGENTS),--agent "$(agent)")
 
 .PHONY: install uninstall
-.PHONY: install-codex uninstall-codex
-.PHONY: install-claude-code uninstall-claude-code
-.PHONY: install-opencode uninstall-opencode
-.PHONY: install-cline uninstall-cline
-.PHONY: install-roo uninstall-roo
+.PHONY: install-instructions uninstall-instructions
+.PHONY: install-skills uninstall-skills
+.PHONY: install-instructions-codex uninstall-instructions-codex
+.PHONY: install-instructions-claude-code uninstall-instructions-claude-code
+.PHONY: install-instructions-opencode uninstall-instructions-opencode
+.PHONY: install-instructions-cline uninstall-instructions-cline
+.PHONY: install-instructions-roo uninstall-instructions-roo
 .PHONY: update-skills list-skills
 
-install: install-codex install-claude-code install-opencode install-cline install-roo
+install: install-instructions install-skills
 
-uninstall: uninstall-codex uninstall-claude-code uninstall-opencode uninstall-cline uninstall-roo
+uninstall: uninstall-instructions uninstall-skills
+
+install-instructions: install-instructions-codex install-instructions-claude-code install-instructions-opencode install-instructions-cline install-instructions-roo
+
+uninstall-instructions: uninstall-instructions-codex uninstall-instructions-claude-code uninstall-instructions-opencode uninstall-instructions-cline uninstall-instructions-roo
+
+install-skills:
+	@if [ ! -f "$(SKILL_MANIFEST)" ]; then \
+		echo "skip: $(SKILL_MANIFEST) not found"; \
+		exit 0; \
+	fi
+	@while IFS= read -r line || [ -n "$$line" ]; do \
+		line="$${line%%#*}"; \
+		set -- $$line; \
+		[ "$$#" -eq 0 ] && continue; \
+		if [ "$$#" -lt 2 ]; then \
+			echo "error: invalid line in $(SKILL_MANIFEST): $$line" >&2; \
+			exit 1; \
+		fi; \
+		source="$$1"; \
+		shift; \
+		skill_args=""; \
+		for s in "$$@"; do \
+			skill_args="$$skill_args --skill $$s"; \
+		done; \
+		command -v npx >/dev/null 2>&1 || { echo "error: npx not found" >&2; exit 1; }; \
+		echo "install skill: $$source ($$*) -> $(SKILL_AGENTS)"; \
+		eval npx skills add \"$$source\" \
+			$$skill_args \
+			$(SKILL_AGENT_ARGS) \
+			$(SKILL_SCOPE) \
+			$(SKILL_INSTALL_FLAGS) < /dev/null; \
+	done < "$(SKILL_MANIFEST)"
+
+uninstall-skills:
+	@if [ ! -f "$(SKILL_MANIFEST)" ]; then \
+		echo "skip: $(SKILL_MANIFEST) not found"; \
+		exit 0; \
+	fi
+	@while IFS= read -r line || [ -n "$$line" ]; do \
+		line="$${line%%#*}"; \
+		set -- $$line; \
+		[ "$$#" -eq 0 ] && continue; \
+		if [ "$$#" -lt 2 ]; then \
+			echo "error: invalid line in $(SKILL_MANIFEST): $$line" >&2; \
+			exit 1; \
+		fi; \
+		shift; \
+		command -v npx >/dev/null 2>&1 || { echo "error: npx not found" >&2; exit 1; }; \
+		echo "remove skill: $$*"; \
+		npx skills remove "$$@" \
+			$(SKILL_SCOPE) \
+			$(SKILL_REMOVE_FLAGS) < /dev/null || true; \
+	done < "$(SKILL_MANIFEST)"
 
 define install_instructions
 	@mkdir -p "$(dir $(2))"
@@ -43,97 +100,35 @@ define uninstall_instructions
 	@echo "removed instructions: $(1)"
 endef
 
-define install_skills_for_agent
-	@if [ ! -f "$(SKILL_MANIFEST)" ]; then \
-		echo "skip: $(SKILL_MANIFEST) not found"; \
-		exit 0; \
-	fi
-	@while IFS= read -r line || [ -n "$$line" ]; do \
-		line="$${line%%#*}"; \
-		set -- $$line; \
-		[ "$$#" -eq 0 ] && continue; \
-		if [ "$$#" -lt 2 ]; then \
-			echo "error: invalid line in $(SKILL_MANIFEST): $$line" >&2; \
-			exit 1; \
-		fi; \
-		source="$$1"; \
-		shift; \
-		skill_args=""; \
-		for s in "$$@"; do \
-			skill_args="$$skill_args --skill $$s"; \
-		done; \
-		command -v npx >/dev/null 2>&1 || { echo "error: npx not found" >&2; exit 1; }; \
-		echo "install skill: $$source ($$*) -> $(1)"; \
-		eval npx skills add \"$$source\" \
-			$$skill_args \
-			--agent \"$(1)\" \
-			$(SKILL_SCOPE) \
-			$(SKILL_INSTALL_FLAGS) < /dev/null; \
-	done < "$(SKILL_MANIFEST)"
-endef
-
-define uninstall_skills_for_agent
-	@if [ ! -f "$(SKILL_MANIFEST)" ]; then \
-		echo "skip: $(SKILL_MANIFEST) not found"; \
-		exit 0; \
-	fi
-	@while IFS= read -r line || [ -n "$$line" ]; do \
-		line="$${line%%#*}"; \
-		set -- $$line; \
-		[ "$$#" -eq 0 ] && continue; \
-		if [ "$$#" -lt 2 ]; then \
-			echo "error: invalid line in $(SKILL_MANIFEST): $$line" >&2; \
-			exit 1; \
-		fi; \
-		shift; \
-		command -v npx >/dev/null 2>&1 || { echo "error: npx not found" >&2; exit 1; }; \
-		echo "remove skill: $$* -> $(1)"; \
-		npx skills remove "$$@" \
-			--agent "$(1)" \
-			$(SKILL_SCOPE) \
-			$(SKILL_REMOVE_FLAGS) < /dev/null || true; \
-	done < "$(SKILL_MANIFEST)"
-endef
-
-install-codex:
+install-instructions-codex:
 	$(call install_instructions,codex,$(PREFIX)/.codex/AGENTS.md)
-	$(call install_skills_for_agent,codex)
 
-uninstall-codex:
+uninstall-instructions-codex:
 	$(call uninstall_instructions,$(PREFIX)/.codex/AGENTS.md)
-	$(call uninstall_skills_for_agent,codex)
 
-install-claude-code:
+install-instructions-claude-code:
 	$(call install_instructions,claude-code,$(PREFIX)/.claude/CLAUDE.md)
-	$(call install_skills_for_agent,claude-code)
 
-uninstall-claude-code:
+uninstall-instructions-claude-code:
 	$(call uninstall_instructions,$(PREFIX)/.claude/CLAUDE.md)
-	$(call uninstall_skills_for_agent,claude-code)
 
-install-opencode:
+install-instructions-opencode:
 	$(call install_instructions,opencode,$(XDG_CONFIG_HOME)/opencode/AGENTS.md)
-	$(call install_skills_for_agent,opencode)
 
-uninstall-opencode:
+uninstall-instructions-opencode:
 	$(call uninstall_instructions,$(XDG_CONFIG_HOME)/opencode/AGENTS.md)
-	$(call uninstall_skills_for_agent,opencode)
 
-install-cline:
+install-instructions-cline:
 	$(call install_instructions,cline,$(PREFIX)/Documents/Cline/Rules/00-global.md)
-	$(call install_skills_for_agent,cline)
 
-uninstall-cline:
+uninstall-instructions-cline:
 	$(call uninstall_instructions,$(PREFIX)/Documents/Cline/Rules/00-global.md)
-	$(call uninstall_skills_for_agent,cline)
 
-install-roo:
+install-instructions-roo:
 	$(call install_instructions,roo,$(PREFIX)/.roo/rules/00-global.md)
-	$(call install_skills_for_agent,roo)
 
-uninstall-roo:
+uninstall-instructions-roo:
 	$(call uninstall_instructions,$(PREFIX)/.roo/rules/00-global.md)
-	$(call uninstall_skills_for_agent,roo)
 
 update-skills:
 	@command -v npx >/dev/null 2>&1 || { echo "error: npx not found" >&2; exit 1; }

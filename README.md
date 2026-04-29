@@ -25,16 +25,16 @@ Install all supported tools:
 make install
 ```
 
-Install only Codex:
+Install only Codex instructions:
 
 ```sh
-make install-codex
+make install-instructions-codex
 ```
 
-Install only Claude Code:
+Install only Claude Code instructions:
 
 ```sh
-make install-claude-code
+make install-instructions-claude-code
 ```
 
 Uninstall all supported tools:
@@ -57,22 +57,23 @@ make list-skills
 
 ## Supported targets
 
-- `make install-codex`
-- `make install-claude-code`
-- `make install-opencode`
-- `make install-cline`
-- `make install-roo-code`
+- `make install-instructions-codex`
+- `make install-instructions-claude-code`
+- `make install-instructions-opencode`
+- `make install-instructions-cline`
+- `make install-instructions-roo`
+- `make install-skills`
+- `make uninstall-skills`
 
-Each `install-*` target installs both:
+Each `install-instructions-*` target installs:
 
 1. the tool-specific global instruction file
-2. every skill listed in `skill-manifest.txt` for that agent
 
-There is intentionally no public `install-skills` target. Skills are installed together with the corresponding tool target.
+Skills are managed separately with `make install-skills` and `make uninstall-skills`.
 
 ## Instruction files
 
-`make install-*` overwrites the target global instruction file.
+`make install-instructions-*` overwrites the target global instruction file.
 
 Back up any existing global instruction files before running this installer if needed.
 
@@ -96,7 +97,7 @@ Overlay file names:
 - `overlays/claude-code.md`
 - `overlays/opencode.md`
 - `overlays/cline.md`
-- `overlays/roo-code.md`
+- `overlays/roo.md`
 
 Empty overlay files are ignored.
 
@@ -126,4 +127,4 @@ During local development, install a skill manually from the working tree:
 npx skills add . --skill <skill-name> --agent claude-code --global --copy -y
 ```
 
-Normal `make install-*` targets install skills from the sources listed in `skill-manifest.txt`.
+`make install-skills` installs every skill listed in `skill-manifest.txt` for the agents in `SKILL_AGENTS`.
