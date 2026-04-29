@@ -4,6 +4,7 @@ Personal configuration for coding agents.
 
 This repository installs:
 
+- CLI tools for supported coding agents
 - global instruction files for supported coding-agent tools
 - skills listed in `skill-manifest.txt` via `npx skills`
 
@@ -57,6 +58,14 @@ make list-skills
 
 ## Supported targets
 
+- `make install-tools`
+- `make uninstall-tools`
+- `make install-tools-codex`
+- `make uninstall-tools-codex`
+- `make install-tools-claude-code`
+- `make uninstall-tools-claude-code`
+- `make install-tools-opencode`
+- `make uninstall-tools-opencode`
 - `make install-instructions-codex`
 - `make install-instructions-claude-code`
 - `make install-instructions-opencode`
@@ -70,6 +79,16 @@ Each `install-instructions-*` target installs:
 1. the tool-specific global instruction file
 
 Skills are managed separately with `make install-skills` and `make uninstall-skills`.
+
+## CLI tools
+
+`make install-tools` installs the CLI tool packages globally:
+
+- `make install-tools-codex`: `@openai/codex`
+- `make install-tools-claude-code`: `@anthropic-ai/claude-code`
+- `make install-tools-opencode`: `opencode-ai`
+
+Override `CODEX_PACKAGE`, `CLAUDE_CODE_PACKAGE`, or `OPENCODE_PACKAGE` to customize package names.
 
 ## Instruction files
 

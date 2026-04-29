@@ -12,8 +12,15 @@ SKILL_INSTALL_FLAGS ?= --copy -y
 SKILL_REMOVE_FLAGS ?= -y
 SKILL_AGENTS ?= codex claude-code opencode cline roo
 SKILL_AGENT_ARGS := $(foreach agent,$(SKILL_AGENTS),--agent "$(agent)")
+CODEX_PACKAGE ?= @openai/codex
+CLAUDE_CODE_PACKAGE ?= @anthropic-ai/claude-code
+OPENCODE_PACKAGE ?= opencode-ai
 
 .PHONY: install uninstall
+.PHONY: install-tools uninstall-tools
+.PHONY: install-tools-codex uninstall-tools-codex
+.PHONY: install-tools-claude-code uninstall-tools-claude-code
+.PHONY: install-tools-opencode uninstall-tools-opencode
 .PHONY: install-instructions uninstall-instructions
 .PHONY: install-skills uninstall-skills
 .PHONY: install-instructions-codex uninstall-instructions-codex
@@ -23,9 +30,37 @@ SKILL_AGENT_ARGS := $(foreach agent,$(SKILL_AGENTS),--agent "$(agent)")
 .PHONY: install-instructions-roo uninstall-instructions-roo
 .PHONY: update-skills list-skills
 
-install: install-instructions install-skills
+install: install-tools install-instructions install-skills
 
-uninstall: uninstall-instructions uninstall-skills
+uninstall: uninstall-instructions uninstall-skills uninstall-tools
+
+install-tools: install-tools-codex install-tools-claude-code install-tools-opencode
+
+uninstall-tools: uninstall-tools-codex uninstall-tools-claude-code uninstall-tools-opencode
+
+install-tools-codex:
+	@command -v npm >/dev/null 2>&1 || { echo "error: npm not found" >&2; exit 1; }
+	npm install -g $(CODEX_PACKAGE)
+
+uninstall-tools-codex:
+	@command -v npm >/dev/null 2>&1 || { echo "error: npm not found" >&2; exit 1; }
+	npm uninstall -g $(CODEX_PACKAGE)
+
+install-tools-claude-code:
+	@command -v npm >/dev/null 2>&1 || { echo "error: npm not found" >&2; exit 1; }
+	npm install -g $(CLAUDE_CODE_PACKAGE)
+
+uninstall-tools-claude-code:
+	@command -v npm >/dev/null 2>&1 || { echo "error: npm not found" >&2; exit 1; }
+	npm uninstall -g $(CLAUDE_CODE_PACKAGE)
+
+install-tools-opencode:
+	@command -v npm >/dev/null 2>&1 || { echo "error: npm not found" >&2; exit 1; }
+	npm install -g $(OPENCODE_PACKAGE)
+
+uninstall-tools-opencode:
+	@command -v npm >/dev/null 2>&1 || { echo "error: npm not found" >&2; exit 1; }
+	npm uninstall -g $(OPENCODE_PACKAGE)
 
 install-instructions: install-instructions-codex install-instructions-claude-code install-instructions-opencode install-instructions-cline install-instructions-roo
 
