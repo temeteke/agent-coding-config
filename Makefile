@@ -10,6 +10,9 @@ SKILL_MANIFEST ?= skill-manifest.txt
 SKILL_SCOPE ?= --global
 SKILL_INSTALL_FLAGS ?= --copy -y
 SKILL_REMOVE_FLAGS ?= -y
+# Disable npx skills telemetry
+export DISABLE_TELEMETRY := 1
+
 SKILL_AGENTS ?= codex claude-code opencode cline roo
 SKILL_AGENT_ARGS := $(foreach agent,$(SKILL_AGENTS),--agent "$(agent)")
 CODEX_PACKAGE ?= @openai/codex
