@@ -1,4 +1,4 @@
 # source skill1 skill2 skill3...
-vercel-labs/skills find-skills
+vercel-labs/skills find-skills web-design-guidelines
 https://gitlab.com/gitlab-org/ai/skills.git glab
 anthropics/skills frontend-design
